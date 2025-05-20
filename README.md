@@ -32,10 +32,3 @@ This desktop application is a visual simulator for page replacement algorithms s
 - HTML, CSS, JavaScript
 - [Electron Forge](https://www.electronforge.io/)
 
-🙌 Contributors
-
-- [@its-xin](https://github.com/its-xin)
-
-📃 License
-
-This project is open-source and available under the [MIT License](LICENSE).
