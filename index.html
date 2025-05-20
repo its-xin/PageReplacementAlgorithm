@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Replacement Algorithm Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #F5ECD5;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #626F47;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      color: #F5ECD5;
+      margin: 0;
+      font-size: 28px;
+    }
+
+    nav {
+      background-color: #A4B465;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    nav a {
+      color: #333;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      background-color: #F0BB78;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    nav a:hover {
+      background-color: #F0BB78CC;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 25px;
+      background: white;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+    }
+
+    h2, h3 {
+      text-align: center;
+      color: #626F47;
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background-color: #f9fafb;
+      font-size: 16px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .controls label {
+      font-weight: normal;
+    }
+
+    button {
+      background-color: #A4B465;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #626F47;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      text-align: center;
+      padding: 12px;
+      font-family: 'Consolas', monospace;
+    }
+
+    th {
+      background-color: #F0BB78;
+      color: #333;
+    }
+
+    .fault {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      font-weight: bold;
+    }
+
+    .about-section {
+      background-color: #F5ECD5;
+      padding: 30px;
+      margin-top: 50px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: none;
+    }
+
+    .about-section.active {
+      display: block;
+    }
+
+    .calculator-section {
+      display: block;
+    }
+
+    .calculator-section.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Page Replacement Algorithm Calculator</h1>
+  </header>
+
+  <div class="container calculator-section" id="calculator">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="referenceString">Reference String (space-separated):</label>
+        <input type="text" id="referenceString">
+
+        <label for="frameCount">Number of Frames:</label>
+        <input type="number" id="frameCount" value="3" min="1">
+      </div>
+
+      <div class="controls">
+        <label><input type="checkbox" id="randomToggle"> Use Random</label>
+        <button onclick="simulate()">Simulate</button>
+      </div>
+    </div>
+
+    <div id="output"></div>
+  </div>
+
+  <div class="container about-section" id="about">
+    <h2>About Page Replacement Algorithms</h2>
+    <p><strong>FIFO (First-In, First-Out):</strong> Removes the oldest page in memory. Simple but can cause more faults in some situations.</p>
+    <p><strong>LRU (Least Recently Used):</strong> Removes the page that has not been used for the longest time. More accurate but harder to implement.</p>
+    <p><strong>OPT (Optimal):</strong> Removes the page that will not be used for the longest time in the future. Theoretically the best, but impractical in real-world systems.</p>
+  </div>
+
+  <nav>
+    <a href="#" onclick="showSection('calculator')">Calculator</a>
+    <a href="#" onclick="showSection('about')">About</a>
+  </nav>
+
+  <script>
+    function showSection(section) {
+      document.getElementById('calculator').classList.toggle('hidden', section !== 'calculator');
+      document.getElementById('about').classList.toggle('active', section === 'about');
+    }
+
+    function simulate() {
+      const outputDiv = document.getElementById("output");
+      const frameCount = parseInt(document.getElementById("frameCount").value);
+      const useRandom = document.getElementById("randomToggle").checked;
+      let referenceString = document.getElementById("referenceString").value.trim().split(/\s+/).map(Number);
+
+      if (useRandom) {
+        referenceString = Array.from({ length: 20 }, () => Math.floor(Math.random() * 10));
+        document.getElementById("referenceString").value = referenceString.join(" ");
+      }
+
+      const results = [];
+
+      // FIFO Implementation
+      let fifoMemory = Array(frameCount).fill(-1);
+      let fifoIndex = -1;
+      let fifoFaults = 0;
+      let fifoStates = [];
+      let fifoFaultFlags = [];
+
+      for (let i = 0; i < referenceString.length; i++) {
+        const page = referenceString[i];
+        if (!fifoMemory.includes(page)) {
+          fifoMemory[(++fifoIndex) % frameCount] = page;
+          fifoFaults++;
+          fifoFaultFlags.push(true);
+        } else {
+          fifoFaultFlags.push(false);
+        }
+        fifoStates.push([...fifoMemory]);
+      }
+
+      // OPTIMAL Implementation
+      let optMemory = Array(frameCount).fill(-1);
+      let optFaults = 0;
+      let optStates = [];
+      let optFaultFlags = [];
+      let filledOpt = 0;
+      let optIndex = -1;
+
+      for (let i = 0; i < referenceString.length; i++) {
+        const page = referenceString[i];
+        if (!optMemory.includes(page)) {
+          if (filledOpt < frameCount) {
+            optMemory[++optIndex % frameCount] = page;
+            filledOpt++;
+          } else {
+            const nextUse = optMemory.map(p => {
+              const nextIndex = referenceString.slice(i + 1).indexOf(p);
+              return nextIndex === -1 ? Infinity : nextIndex;
+            });
+            const farthest = nextUse.indexOf(Math.max(...nextUse));
+            optMemory[farthest] = page;
+          }
+          optFaults++;
+          optFaultFlags.push(true);
+        } else {
+          optFaultFlags.push(false);
+        }
+        optStates.push([...optMemory]);
+      }
+
+      // LRU Implementation
+      let lruMemory = Array(frameCount).fill(-1);
+      let lruFaults = 0;
+      let lruStates = [];
+      let lruFaultFlags = [];
+      let filledLru = 0;
+      let lruIndex = -1;
+
+      for (let i = 0; i < referenceString.length; i++) {
+        const page = referenceString[i];
+        if (!lruMemory.includes(page)) {
+          if (filledLru < frameCount) {
+            lruMemory[++lruIndex % frameCount] = page;
+            filledLru++;
+          } else {
+            const lastUse = lruMemory.map(p => {
+              const reversed = referenceString.slice(0, i).reverse();
+              const lastIndex = reversed.indexOf(p);
+              return lastIndex === -1 ? -Infinity : lastIndex;
+            });
+            const lruPage = lastUse.indexOf(Math.max(...lastUse));
+            lruMemory[lruPage] = page;
+          }
+          lruFaults++;
+          lruFaultFlags.push(true);
+        } else {
+          lruFaultFlags.push(false);
+        }
+        lruStates.push([...lruMemory]);
+      }
+
+      function buildMatrix(states, faults, refs) {
+        let html = '<table><tr>' + refs.map(r => `<th>${r}</th>`).join('') + '</tr>';
+        for (let row = 0; row < states[0].length; row++) {
+          html += '<tr>' + states.map(col => `<td>${col[row] !== -1 ? col[row] : ''}</td>`).join('') + '</tr>';
+        }
+        html += '<tr>' + faults.map(f => `<td class="${f ? 'fault' : ''}">${f ? '*' : ''}</td>`).join('') + '</tr>';
+        html += '</table>';
+        return html;
+      }
+
+      outputDiv.innerHTML = `
+        <div><h2>FIFO</h2>${buildMatrix(fifoStates, fifoFaultFlags, referenceString)}<p><strong>Total Page Faults:</strong> ${fifoFaults}</p></div>
+        <div><h2>OPT</h2>${buildMatrix(optStates, optFaultFlags, referenceString)}<p><strong>Total Page Faults:</strong> ${optFaults}</p></div>
+        <div><h2>LRU</h2>${buildMatrix(lruStates, lruFaultFlags, referenceString)}<p><strong>Total Page Faults:</strong> ${lruFaults}</p></div>
+        <h3>Conclusion</h3>
+        <p>The algorithm with the fewest faults is <strong>${Math.min(fifoFaults, lruFaults, optFaults) === fifoFaults ? 'FIFO' : Math.min(fifoFaults, lruFaults, optFaults) === lruFaults ? 'LRU' : 'OPT'}</strong>.</p>
+      `;
+    }
+  </script>
+</body>
+</html>
