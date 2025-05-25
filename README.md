@@ -1,4 +1,4 @@
-# Page Replacement Algorithm Visualizer
+[OS Case Study - MENDOZA.pdf](https://github.com/user-attachments/files/20430947/OS.Case.Study.-.MENDOZA.pdf)# Page Replacement Algorithm Visualizer
 
 This desktop application is a visual simulator for page replacement algorithms such as FIFO, LRU, and Optimal (OPT). Built with Electron, this app allows users to input a reference string and frame size, and see the algorithm play out step-by-step.
 
@@ -32,3 +32,5 @@ This desktop application is a visual simulator for page replacement algorithms s
 - HTML, CSS, JavaScript
 - [Electron Forge](https://www.electronforge.io/)
 
+📑 Documentation
+[OS Case Study - MENDOZA.pdf](https://github.com/user-attachments/files/20430946/OS.Case.Study.-.MENDOZA.pdf)
